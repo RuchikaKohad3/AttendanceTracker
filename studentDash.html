@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .dashboard-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h2 { margin-bottom: 20px; }
+        button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover { background-color: #45a049; }
+
+        /* Modal Styling */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 12px;
+            width: 80%;
+            max-width: 400px;
+            text-align: center;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+        #message { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <h2>Welcome To The Student Dashboard</h2>
+        <button onclick="viewAttendance()">View Attendance</button>
+        <button onclick="applyMedicalLeave()">Apply Medical Leave</button>
+        <button onclick="openModal()">Reset Password</button>
+    </div>
+
+    <!-- Reset Password Modal -->
+    <div class="modal" id="resetPasswordModal">
+        <div class="modal-content">
+            <h3>Reset Password</h3>
+            <input type="password" id="currentPassword" placeholder="Current Password" required>
+            <input type="password" id="newPassword" placeholder="New Password" required>
+            <button onclick="resetPassword()">Submit</button>
+            <button onclick="closeModal()">Close</button>
+            <div id="message"></div>
+        </div>
+    </div>
+
+    <script>
+        // Display the modal
+        function openModal() {
+            document.getElementById('resetPasswordModal').style.display = 'block';
+        }
+
+        // Hide the modal
+        function closeModal() {
+            document.getElementById('resetPasswordModal').style.display = 'none';
+        }
+
+        // Reset Password Function
+        function resetPassword() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const messageDiv = document.getElementById('message');
+            const rollNumber = sessionStorage.getItem('rollNumber');
+
+            if (!currentPassword || !newPassword) {
+                messageDiv.textContent = "Please fill in all fields";
+                messageDiv.style.color = "red";
+                return;
+            }
+
+            fetch('http://localhost:5000/reset-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rollNumber, currentPassword, newPassword })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => { throw new Error(data.message); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                messageDiv.textContent = data.message;
+                messageDiv.style.color = "green";
+            })
+            .catch(error => {
+                messageDiv.textContent = error.message || "Error connecting to server";
+                messageDiv.style.color = "red";
+                console.error("Fetch Error:", error);
+            });
+        }
+
+        // Dummy Functions
+        function viewAttendance() {
+            alert("View Attendance clicked!");
+        }
+
+        function applyMedicalLeave() {
+            alert("Apply Medical Leave clicked!");
+        }
+
+        // For Testing Purposes
+        sessionStorage.setItem('rollNumber', '0801CS231114');
+    </script>
+</body>
+</html>
